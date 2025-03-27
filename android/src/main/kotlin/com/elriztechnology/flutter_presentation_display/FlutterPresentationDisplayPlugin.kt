@@ -48,17 +48,6 @@ class FlutterPresentationDisplayPlugin : FlutterPlugin, ActivityAware, MethodCha
     private const val mainViewTypeId = "main_display_channel"
 
     private var displayManager: DisplayManager? = null
-
-    @JvmStatic
-    fun registerWith(registrar: PluginRegistry.Registrar) {
-      val channel = MethodChannel(registrar.messenger(), secondaryViewTypeId)
-      channel.setMethodCallHandler(FlutterPresentationDisplayPlugin())
-
-      val eventChannel = EventChannel(registrar.messenger(), viewTypeEventsId)
-      displayManager = registrar.activity()?.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
-      val displayConnectedStreamHandler = DisplayConnectedStreamHandler(displayManager)
-      eventChannel.setStreamHandler(displayConnectedStreamHandler)
-    }
   }
 
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
@@ -67,11 +56,11 @@ class FlutterPresentationDisplayPlugin : FlutterPlugin, ActivityAware, MethodCha
   }
 
   override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+    Log.i("Plugin", "Method: ${call.method}, Arguments: ${call.arguments}")
     when (call.method) {
       "showPresentation" -> {
         try {
           val obj = JSONObject(call.arguments as String)
-          Log.i("Plugin", "Method: ${call.method}, Arguments: ${call.arguments}")
           val displayId: Int = obj.getInt("displayId")
           val tag: String = obj.getString("routerName")
           val display = displayManager?.getDisplay(displayId)
